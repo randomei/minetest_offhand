@@ -69,15 +69,21 @@ local function build_inventory_icon(itemdef)
 end
 
 -- switch items between hands on configured key press
-local switch_key = minetest.settings:get("offhand_key") or "aux1"
-if switch_key ~= "none" then
+local function register_switchkey()
+    local switch_key = minetest.settings:get("offhand_key") or "aux1"
+    if switch_key == "none" then
+        return
+    end
     controls.register_on_press(function(player, control_name)
         if control_name ~= switch_key then
+            return
+        elseif switch_key == "zoom" and player:get_wielded_item():get_name() == "binoculars:binoculars" then
             return
         end
         switch_hands(player)
     end)
 end
+register_switchkey()
 
 -- overwrite item placement to utilize offhand functionality instead
 -- special tools will usually not invoke this when they set a custom handler
