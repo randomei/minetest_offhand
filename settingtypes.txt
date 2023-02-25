@@ -1,0 +1,1 @@
+offhand_key (Key to switch items between hands) enum aux1 none,aux1,zoom,sneak,jump
