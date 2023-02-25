@@ -117,7 +117,7 @@ local function update_wear_bar(player, itemstack)
         color = {255, 511 - wear_i, 0}
     end
     local wear_bar = offhand[player].hud.wear_bar
-    player:hud_change(wear_bar, "text", "mcl_wear_bar.png^[colorize:#" .. rgb_to_hex(color[1], color[2], color[3]))
+    player:hud_change(wear_bar, "text", "offhand_wear_bar.png^[colorize:#" .. rgb_to_hex(color[1], color[2], color[3]))
     player:hud_change(wear_bar, "scale", {
         x = 40 * wear_bar_percent,
         y = 3
@@ -175,7 +175,7 @@ minetest.register_globalstep(function(dtime)
             end
             if not offhand_hud.wear_bar_bg and minetest.registered_tools[offhand_item] then
                 if offhand_get_wear(player) > 0 then
-                    local texture = "mcl_wear_bar.png^[colorize:#000000"
+                    local texture = "offhand_wear_bar.png^[colorize:#000000"
                     offhand_hud.wear_bar_bg = player:hud_add({
                         hud_elem_type = "image",
                         position = {
@@ -279,10 +279,10 @@ minetest.register_allow_player_inventory_action(function(player, action, invento
     end
 end)
 
-minetest.register_on_player_inventory_action(function(player, action, inventory, inventory_info)
+--[[minetest.register_on_player_inventory_action(function(player, action, inventory, inventory_info)
     local from_offhand = inventory_info.from_list == "offhand"
     local to_offhand = inventory_info.to_list == "offhand"
     if action == "move" and from_offhand or to_offhand then
         --mcl_inventory.update_inventory_formspec(player)
     end
-end)
+end)]]
