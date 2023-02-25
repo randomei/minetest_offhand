@@ -15,6 +15,13 @@ if minetest.get_modpath("bones") then
     table.insert(bones.player_inventory_lists, "offhand")
 end
 
+-- add support for player emitted light
+if minetest.get_modpath("wielded_light") then
+    wielded_light.register_player_lightstep(function(player)
+        wielded_light.track_user_entity(player, "offhand", offhand.get_offhand(player):get_name())
+    end)
+end
+
 -- switch itemstacks between main hand and offhand
 local function switch_hands(player)
     local inv = player:get_inventory()
