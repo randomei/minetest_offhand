@@ -6,4 +6,4 @@ This lets you place torches and other nodes without having to put away your swor
 
 # Credit & License
 This mod is licensed under GNU GPL v3 like the original.
-Check [Mincelone 2's Credit section](https://github.com/MineClone2/MineClone2/blob/master/CREDITS.md) for information on the original authors.
+Check [Mineclone 2's Credit section](https://github.com/MineClone2/MineClone2/blob/master/CREDITS.md) for information on the original authors.

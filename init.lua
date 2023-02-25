@@ -1,14 +1,21 @@
-local minetest, math = minetest, math
+local minetest, math, controls = minetest, math, controls
 offhand = {}
 
 local max_offhand_px = 128
 -- only supports up to 128px textures
 
+-- register offhand inventory
 minetest.register_on_joinplayer(function(player)
     local inv = player:get_inventory()
     inv:set_size("offhand", 1)
 end)
 
+-- move items to bones upon death
+if minetest.get_modpath("bones") then
+    table.insert(bones.player_inventory_lists, "offhand")
+end
+
+-- switch itemstacks between main hand and offhand
 local function switch_hands(player)
     local inv = player:get_inventory()
     local mainhand_stack = player:get_wielded_item()
@@ -17,7 +24,10 @@ local function switch_hands(player)
     player:set_wielded_item(offhand_stack)
 end
 
+-- set flag to prevent calling this again on the offhand handler
 local is_switched = false
+-- temporarily switches items between hands (for compatibility)
+-- and then uses offhand item
 local function use_offhand(mainhand_stack, player, pointed_thing)
     switch_hands(player)
     is_switched = true
@@ -30,6 +40,7 @@ local function use_offhand(mainhand_stack, player, pointed_thing)
     return mainhand_stack
 end
 
+-- either returns an inventory_image or builds a 3D preview of the node
 local function build_inventory_icon(itemdef)
     if itemdef.inventory_image ~= "" then
         return itemdef.inventory_image .. "^[resize:" .. max_offhand_px .. "x" .. max_offhand_px
@@ -50,6 +61,7 @@ local function build_inventory_icon(itemdef)
     return "[inventorycube{" .. (textures:gsub("%^", "&")) .. "^[resize:" .. max_offhand_px .. "x" ..max_offhand_px
 end
 
+-- switch items between hands on configured key press
 local switch_key = minetest.settings:get("offhand_key") or "aux1"
 if switch_key ~= "none" then
     controls.register_on_press(function(player, control_name)
@@ -60,6 +72,8 @@ if switch_key ~= "none" then
     end)
 end
 
+-- overwrite item placement to utilize offhand functionality instead
+-- special tools will usually not invoke this when they set a custom handler
 local item_place = minetest.item_place
 minetest.item_place = function(mainhand_stack, player, pointed_thing)
     local inv = player:get_inventory()
