@@ -1,1 +1,2 @@
 offhand_key (Key to switch items between hands) enum aux1 none,aux1,zoom,sneak,jump
+offhand_wieldview (Show 3D model of held item) bool true

@@ -313,3 +313,7 @@ end)
         --mcl_inventory.update_inventory_formspec(player)
     end
 end)]]
+
+if minetest.settings:get_bool("offhand_wieldview", true) then
+    dofile(minetest.get_modpath(minetest.get_current_modname()).."/wield3d_offhand/wield3d.lua")
+end

@@ -7,3 +7,5 @@ This lets you place torches and other nodes without having to put away your swor
 # Credit & License
 This mod is licensed under GNU GPL v3 like the original.
 Check [Mineclone 2's Credit section](https://github.com/MineClone2/MineClone2/blob/master/CREDITS.md) for information on the original authors.
+
+Files in the wield3d_offhand folder are forked from [wield3d](https://github.com/stujones11/wield3d) by Stuart Jones. Files in that specific folder are dual-licensed under GNU GPL v3 as well as MIT.
