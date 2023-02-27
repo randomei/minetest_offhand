@@ -112,6 +112,10 @@ function wield_entity:on_step(dtime)
 	local wield = player_wielding[self.offhand_wielder]
 	local stack = offhand.get_offhand(player)
 	local item = stack:get_name() or ""
+	-- don't render item if player holds shield
+	if armor and (armor:get_weared_armor_elements(player))["shield"] ~= nil then
+		item = ""
+	end
 	if wield and item ~= wield.item then
 		wield.item = item
 		if item == "" then
