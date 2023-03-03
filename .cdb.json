@@ -2,7 +2,7 @@
     "type": "MOD",
     "title": "Offhand Items",
     "dev_state": "BETA",
-    "tags": ["tool","inventory"],
+    "tags": ["tools","inventory"],
     "repo": "https://github.com/t-affeldt/minetest_offhand",
     "issue_tracker": "https://github.com/t-affeldt/minetest_offhand/issues",
     "forums": 29223,
