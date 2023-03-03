@@ -5,6 +5,6 @@
     "tags": ["tool","inventory"],
     "repo": "https://github.com/t-affeldt/minetest_offhand",
     "issue_tracker": "https://github.com/t-affeldt/minetest_offhand/issues",
-    "forums": "https://forum.minetest.net/viewtopic.php?f=9&t=29223",
+    "forums": 29223,
     "license": "GPL-3.0-only"
 }
