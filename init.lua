@@ -11,7 +11,8 @@ minetest.register_on_joinplayer(function(player)
 end)
 
 -- move items to bones upon death
-if minetest.get_modpath("bones") then
+-- extra check for table because "bones (redo)" doesn't have it
+if minetest.get_modpath("bones") and bones.player_inventory_lists ~= nil then
     table.insert(bones.player_inventory_lists, "offhand")
 end
 
