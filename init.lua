@@ -2,7 +2,7 @@ local minetest, math, controls = minetest, math, controls
 offhand = {}
 
 local max_offhand_px = 128
--- only supports up to 128px textures
+local hotbar_size = tonumber(minetest.settings:get("offhand_hotbar_size") or 64)
 
 -- register offhand inventory
 minetest.register_on_joinplayer(function(player)
@@ -90,6 +90,9 @@ register_switchkey()
 -- special tools will usually not invoke this when they set a custom handler
 local item_place = minetest.item_place
 minetest.item_place = function(mainhand_stack, player, pointed_thing)
+    if not player or not player:is_player() then
+        return item_place(mainhand_stack, player, pointed_thing)
+    end
     local inv = player:get_inventory()
     if not is_switched
             and minetest.registered_tools[mainhand_stack:get_name()] ~= nil
@@ -98,7 +101,6 @@ minetest.item_place = function(mainhand_stack, player, pointed_thing)
     end
     return item_place(mainhand_stack, player, pointed_thing)
 end
-
 
 function offhand.get_offhand(player)
     return player:get_inventory():get_stack("offhand", 1)
@@ -168,11 +170,11 @@ minetest.register_globalstep(function(dtime)
                 x = 0.5,
                 y = 1
             }
+            local hotbar_count = player:hud_get_hotbar_itemcount()
             local offset = {
-                x = -320,
+                x = - hotbar_size * (hotbar_count + 1) / 2,
                 y = -32
             }
-
             if not offhand_hud.slot then
                 offhand_hud.slot = player:hud_add({
                     hud_elem_type = "image",
@@ -211,8 +213,8 @@ minetest.register_globalstep(function(dtime)
                             y = 1
                         },
                         offset = {
-                            x = -320,
-                            y = -13
+                            x = offset.x,
+                            y = offset.y + 19
                         },
                         scale = {
                             x = 40,
@@ -228,8 +230,8 @@ minetest.register_globalstep(function(dtime)
                             y = 1
                         },
                         offset = {
-                            x = -320,
-                            y = -13
+                            x = offset.x,
+                            y = offset.y + 19
                         },
                         scale = {
                             x = 10,
@@ -250,8 +252,8 @@ minetest.register_globalstep(function(dtime)
                         y = 1
                     },
                     offset = {
-                        x = -298,
-                        y = -18
+                        x = offset.x + 22,
+                        y = offset.y + 14
                     },
                     scale = {
                         x = 1,
