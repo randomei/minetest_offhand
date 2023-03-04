@@ -94,8 +94,9 @@ minetest.item_place = function(mainhand_stack, player, pointed_thing)
         return item_place(mainhand_stack, player, pointed_thing)
     end
     local inv = player:get_inventory()
+    local stackname = mainhand_stack:get_name()
     if not is_switched
-            and minetest.registered_tools[mainhand_stack:get_name()] ~= nil
+            and (stackname == "" or minetest.registered_tools[stackname] ~= nil)
             and not inv:get_stack("offhand", 1):is_empty() then
         return use_offhand(mainhand_stack, player, pointed_thing)
     end
@@ -147,13 +148,14 @@ local function update_wear_bar(player, itemstack)
         color = {255, 511 - wear_i, 0}
     end
     local wear_bar = offhand[player].hud.wear_bar
+    local hotbar_offset = - hotbar_size * (offhand[player].hotbar_count + 1) / 2
     player:hud_change(wear_bar, "text", "offhand_wear_bar.png^[colorize:#" .. rgb_to_hex(color[1], color[2], color[3]))
     player:hud_change(wear_bar, "scale", {
         x = 40 * wear_bar_percent,
         y = 3
     })
     player:hud_change(wear_bar, "offset", {
-        x = -320 - (20 - player:hud_get(wear_bar).scale.x / 2),
+        x = hotbar_offset - (20 - player:hud_get(wear_bar).scale.x / 2),
         y = -13
     })
 end
@@ -164,13 +166,22 @@ minetest.register_globalstep(function(dtime)
         local offhand_item = itemstack:get_name()
         local offhand_hud = offhand[player].hud
         local item = minetest.registered_items[offhand_item]
+
+        -- reset hud overlay if hotbar size changed
+        local hotbar_count = player:hud_get_hotbar_itemcount()
+        if hotbar_count ~= offhand[player].hotbar_count then
+            for index, _ in pairs(offhand[player].hud) do
+                remove_hud(player, index)
+            end
+        end
+        offhand[player].hotbar_count = hotbar_count
+
         if offhand_item ~= "" and item then
             local item_texture = build_inventory_icon(item)
             local position = {
                 x = 0.5,
                 y = 1
             }
-            local hotbar_count = player:hud_get_hotbar_itemcount()
             local offset = {
                 x = - hotbar_size * (hotbar_count + 1) / 2,
                 y = -32
