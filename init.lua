@@ -36,12 +36,12 @@ end
 local is_switched = false
 -- temporarily switches items between hands (for compatibility)
 -- and then uses offhand item
-local function use_offhand(mainhand_stack, player, pointed_thing)
+local function use_offhand(mainhand_stack, player, pointed_thing, ...)
     switch_hands(player)
     is_switched = true
     local offhand_stack = player:get_wielded_item()
     local offhand_def = offhand_stack:get_definition()
-    local modified_stack = offhand_def.on_place(offhand_stack, player, pointed_thing)
+    local modified_stack = offhand_def.on_place(offhand_stack, player, pointed_thing, ...)
     player:set_wielded_item(modified_stack)
     switch_hands(player)
     is_switched = false
@@ -89,18 +89,18 @@ register_switchkey()
 -- overwrite item placement to utilize offhand functionality instead
 -- special tools will usually not invoke this when they set a custom handler
 local item_place = minetest.item_place
-minetest.item_place = function(mainhand_stack, player, pointed_thing)
+minetest.item_place = function(mainhand_stack, player, pointed_thing, ...)
     if not player or not player:is_player() then
-        return item_place(mainhand_stack, player, pointed_thing)
+        return item_place(mainhand_stack, player, pointed_thing, ...)
     end
     local inv = player:get_inventory()
     local stackname = mainhand_stack:get_name()
     if not is_switched
             and (stackname == "" or minetest.registered_tools[stackname] ~= nil)
             and not inv:get_stack("offhand", 1):is_empty() then
-        return use_offhand(mainhand_stack, player, pointed_thing)
+        return use_offhand(mainhand_stack, player, pointed_thing, ...)
     end
-    return item_place(mainhand_stack, player, pointed_thing)
+    return item_place(mainhand_stack, player, pointed_thing, ...)
 end
 
 function offhand.get_offhand(player)
@@ -312,21 +312,9 @@ end)
 minetest.register_allow_player_inventory_action(function(player, action, inventory, inventory_info)
     if action == "move" and inventory_info.to_list == "offhand" then
         local itemstack = inventory:get_stack(inventory_info.from_list, inventory_info.from_index)
-        --[[if not (minetest.get_item_group(itemstack:get_name(), "offhand_item") > 0)  then
-			return 0
-		else]]
         return itemstack:get_stack_max()
-        -- end
     end
 end)
-
---[[minetest.register_on_player_inventory_action(function(player, action, inventory, inventory_info)
-    local from_offhand = inventory_info.from_list == "offhand"
-    local to_offhand = inventory_info.to_list == "offhand"
-    if action == "move" and from_offhand or to_offhand then
-        --mcl_inventory.update_inventory_formspec(player)
-    end
-end)]]
 
 if minetest.settings:get_bool("offhand_wieldview", true) then
     dofile(minetest.get_modpath(minetest.get_current_modname()).."/wield3d_offhand/wield3d.lua")
