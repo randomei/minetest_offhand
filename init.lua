@@ -66,7 +66,7 @@ local function build_inventory_icon(itemdef)
         end
     end
     local textures = table.concat(tiles, "{")
-    return "[inventorycube{" .. textures:gsub("%^", "&")
+    return "[inventorycube{" .. (textures:gsub("%^", "&")) .. "^[resize:" .. max_offhand_px .. "x" ..max_offhand_px
 end
 
 -- switch items between hands on configured key press
