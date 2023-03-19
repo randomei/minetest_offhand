@@ -56,9 +56,9 @@ local function build_inventory_icon(itemdef)
         return "blank.png"
     end
     local tiles = {
-        itemdef.tiles[1],
-        itemdef.tiles[3] or itemdef.tiles[1],
-        itemdef.tiles[5] or itemdef.tiles[3] or itemdef.tiles[1]
+        (itemdef.tiles[1]) .. "^[resize:" .. max_offhand_px .. "x" .. max_offhand_px,
+        (itemdef.tiles[3] or itemdef.tiles[1]) .. "^[resize:" .. max_offhand_px .. "x" .. max_offhand_px,
+        (itemdef.tiles[5] or itemdef.tiles[3] or itemdef.tiles[1]) .. "^[resize:" .. max_offhand_px .. "x" .. max_offhand_px
     }
     for i, tile in pairs(tiles) do
         if (type(tile) == "table") then
@@ -66,7 +66,7 @@ local function build_inventory_icon(itemdef)
         end
     end
     local textures = table.concat(tiles, "{")
-    return "[inventorycube{" .. (textures:gsub("%^", "&")) .. "^[resize:" .. max_offhand_px .. "x" ..max_offhand_px
+    return "[inventorycube{" .. textures:gsub("%^", "&")
 end
 
 -- switch items between hands on configured key press
