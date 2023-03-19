@@ -52,8 +52,8 @@ end
 local function build_inventory_icon(itemdef)
     if itemdef.inventory_image ~= "" then
         return itemdef.inventory_image .. "^[resize:" .. max_offhand_px .. "x" .. max_offhand_px
-    elseif not itemdef.tiles then
-        return "blank.png"
+    elseif not itemdef.tiles or not itemdef.tiles[1] then
+        return "blank.png^[resize:" .. max_offhand_px .. "x" ..max_offhand_px
     end
     local tiles = {
         (itemdef.tiles[1]) .. "^[resize:" .. max_offhand_px .. "x" .. max_offhand_px,
