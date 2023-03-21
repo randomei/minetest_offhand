@@ -48,6 +48,11 @@ local function use_offhand(mainhand_stack, player, pointed_thing, ...)
     return mainhand_stack
 end
 
+local function get_tile_name(tiledef)
+    if type(tiledef) == "table" then return tiledef.name end
+    return tiledef
+end
+
 -- either returns an inventory_image or builds a 3D preview of the node
 local function build_inventory_icon(itemdef)
     if itemdef.inventory_image ~= "" then
@@ -56,9 +61,9 @@ local function build_inventory_icon(itemdef)
         return "blank.png^[resize:" .. max_offhand_px .. "x" ..max_offhand_px
     end
     local tiles = {
-        (itemdef.tiles[1]) .. "^[resize:" .. max_offhand_px .. "x" .. max_offhand_px,
-        (itemdef.tiles[3] or itemdef.tiles[1]) .. "^[resize:" .. max_offhand_px .. "x" .. max_offhand_px,
-        (itemdef.tiles[5] or itemdef.tiles[3] or itemdef.tiles[1]) .. "^[resize:" .. max_offhand_px .. "x" .. max_offhand_px
+        get_tile_name(itemdef.tiles[1]) .. "^[resize:" .. max_offhand_px .. "x" .. max_offhand_px,
+        get_tile_name(itemdef.tiles[3] or itemdef.tiles[1]) .. "^[resize:" .. max_offhand_px .. "x" .. max_offhand_px,
+        get_tile_name(itemdef.tiles[5] or itemdef.tiles[3] or itemdef.tiles[1]) .. "^[resize:" .. max_offhand_px .. "x" .. max_offhand_px
     }
     for i, tile in pairs(tiles) do
         if (type(tile) == "table") then
