@@ -1,4 +1,3 @@
-local minetest, math, controls = minetest, math, controls
 offhand = {}
 
 local max_offhand_px = 128
@@ -32,16 +31,22 @@ local function switch_hands(player)
     player:set_wielded_item(offhand_stack)
 end
 
+local function do_nothing(itemstack) return itemstack end
+
 -- set flag to prevent calling this again on the offhand handler
 local is_switched = false
 -- temporarily switches items between hands (for compatibility)
 -- and then uses offhand item
-local function use_offhand(mainhand_stack, player, pointed_thing, ...)
+local function use_offhand(secondary, mainhand_stack, player, pointed_thing, ...)
     switch_hands(player)
     is_switched = true
     local offhand_stack = player:get_wielded_item()
     local offhand_def = offhand_stack:get_definition()
-    local modified_stack = offhand_def.on_place(offhand_stack, player, pointed_thing, ...)
+    local use = offhand_def.on_place
+    if secondary then use = offhand_def.on_secondary_use or do_nothing end
+    local modified_stack = use(offhand_stack, player, pointed_thing, ...)
+    -- don't change itemstack when handler returns nil
+    if modified_stack == nil then modified_stack = offhand_stack end
     player:set_wielded_item(modified_stack)
     switch_hands(player)
     is_switched = false
@@ -103,12 +108,41 @@ minetest.item_place = function(mainhand_stack, player, pointed_thing, ...)
     if not is_switched
             and (stackname == "" or minetest.registered_tools[stackname] ~= nil)
             and not inv:get_stack("offhand", 1):is_empty() then
-        return use_offhand(mainhand_stack, player, pointed_thing, ...)
+        return use_offhand(false, mainhand_stack, player, pointed_thing, ...)
     end
     return item_place(mainhand_stack, player, pointed_thing, ...)
 end
 
+local function get_pointed_thing(player, itemstack)
+    local itemdef = itemstack:get_definition()
+    -- get node / nothing that player looks at
+    local range = itemdef.range or 4
+    local eye_height = (player:get_properties()).eye_height
+    local pos1 = vector.add(player:get_pos(), vector.new({ x = 0, y = eye_height, z = 0 }))
+    local pos2 = vector.add(pos1, vector.multiply(player:get_look_dir(), range))
+    local ray = Raycast(pos1, pos2, false, false)
+    local pointed_thing = ray()
+    return pointed_thing
+end
+
+-- detect right-click in the air when tool has no on_secondary_use handler
+controls.register_on_press(function(player, control_name)
+    if control_name ~= "place" then return end
+    local mainhand = player:get_wielded_item()
+    local stackname = mainhand:get_name() or ""
+    -- tool already implements own handler, skip
+    if mainhand and mainhand.on_secondary_use then return end
+    -- not actually a tool, skip
+    if stackname ~= "" and minetest.registered_tools[stackname] == nil then return end
+    -- looking at ground -> normal on_use will be called, skip
+    if get_pointed_thing(player, mainhand) ~= nil then return end
+    return use_offhand(true, mainhand, player, { type = "nothing" })
+end)
+
 function offhand.get_offhand(player)
+    if is_switched then
+        return player:get_wielded_item()
+    end
     return player:get_inventory():get_stack("offhand", 1)
 end
 
@@ -136,14 +170,14 @@ local function remove_hud(player, hud)
     end
 end
 
-function rgb_to_hex(r, g, b)
+local function rgb_to_hex(r, g, b)
     return string.format("%02x%02x%02x", r, g, b)
 end
 
 local function update_wear_bar(player, itemstack)
     local wear_bar_percent = (65535 - offhand_get_wear(player)) / 65535
 
-    local color = {255, 255, 255}
+    local color
     local wear = itemstack:get_wear() / 65535;
     local wear_i = math.min(math.floor(wear * 600), 511);
     wear_i = math.min(wear_i + 10, 511);
