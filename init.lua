@@ -1,3 +1,8 @@
+if minetest.get_modpath("mcl_offhand") ~= nil then
+    minetest.log("error", "Deactivating offhand mod because it is incompatible with Mineclone")
+    return
+end
+
 offhand = {}
 
 local max_offhand_px = 128
@@ -20,6 +25,20 @@ if minetest.get_modpath("wielded_light") then
     wielded_light.register_player_lightstep(function(player)
         wielded_light.track_user_entity(player, "offhand", offhand.get_offhand(player):get_name())
     end)
+end
+
+-- event handler when item changes
+-- call signature: func(player, item_before, item_after)
+local change_handlers = {}
+function offhand.register_on_item_change(func)
+    table.insert(change_handlers, func)
+end
+
+local function update_offhand(player, item_before, item_after)
+    for _, func in pairs(change_handlers) do
+        func(player, item_before, item_after)
+    end
+    minetest.log("update")
 end
 
 -- switch itemstacks between main hand and offhand
@@ -50,6 +69,7 @@ local function use_offhand(secondary, mainhand_stack, player, pointed_thing, ...
     player:set_wielded_item(modified_stack)
     switch_hands(player)
     is_switched = false
+    update_offhand(player, offhand_stack, modified_stack)
     return mainhand_stack
 end
 
@@ -60,7 +80,7 @@ end
 
 -- either returns an inventory_image or builds a 3D preview of the node
 local function build_inventory_icon(itemdef)
-    if itemdef.inventory_image ~= "" then
+    if itemdef.inventory_image and itemdef.inventory_image ~= "" then
         return itemdef.inventory_image .. "^[resize:" .. max_offhand_px .. "x" .. max_offhand_px
     elseif not itemdef.tiles or not itemdef.tiles[1] then
         return "blank.png^[resize:" .. max_offhand_px .. "x" ..max_offhand_px
@@ -92,6 +112,9 @@ local function register_switchkey()
             return
         end
         switch_hands(player)
+        local item_before = player:get_wielded_item()
+        local item_after = offhand.get_offhand(player)
+        update_offhand(player, item_before, item_after)
     end)
 end
 register_switchkey()
@@ -114,15 +137,37 @@ minetest.item_place = function(mainhand_stack, player, pointed_thing, ...)
 end
 
 local function get_pointed_thing(player, itemstack)
+    --- determine pointing range
     local itemdef = itemstack:get_definition()
-    -- get node / nothing that player looks at
-    local range = itemdef.range or 4
-    local eye_height = (player:get_properties()).eye_height
-    local pos1 = vector.add(player:get_pos(), vector.new({ x = 0, y = eye_height, z = 0 }))
+    local range = itemdef.range
+    if not itemdef.range then
+        -- use empty hand's range
+        local hand = minetest.registered_items[""]
+        range = hand.range or 5
+    end
+    -- adjust player position
+    local pos1 = player:get_pos()
+    pos1 = pos1 + player:get_eye_offset()
+    pos1.y = pos1.y + (player:get_properties()).eye_height
+    -- cast ray from player's eyes
     local pos2 = vector.add(pos1, vector.multiply(player:get_look_dir(), range))
     local ray = Raycast(pos1, pos2, false, false)
-    local pointed_thing = ray()
-    return pointed_thing
+    -- iterate through passed nodes and determine if pointable
+    local result = nil
+    for pointed_thing in ray do
+        if pointed_thing.type == "node" then
+            local node = minetest.get_node(pointed_thing.under)
+            local nodedef = minetest.registered_nodes[node.name]
+            if nodedef and nodedef.pointable ~= false then
+                result = pointed_thing
+                break
+            end
+        else
+            result = nil
+            break
+        end
+    end
+    return result
 end
 
 -- detect right-click in the air when tool has no on_secondary_use handler
@@ -356,5 +401,6 @@ minetest.register_allow_player_inventory_action(function(player, action, invento
 end)
 
 if minetest.settings:get_bool("offhand_wieldview", true) then
-    dofile(minetest.get_modpath(minetest.get_current_modname()).."/wield3d_offhand/wield3d.lua")
+    --dofile(minetest.get_modpath(minetest.get_current_modname()).."/wield3d_offhand/wield3d.lua")
+    dofile(minetest.get_modpath(minetest.get_current_modname()) .. DIR_DELIM .. "wielditem.lua")
 end
