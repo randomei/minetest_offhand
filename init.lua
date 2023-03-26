@@ -38,7 +38,6 @@ local function update_offhand(player, item_before, item_after)
     for _, func in pairs(change_handlers) do
         func(player, item_before, item_after)
     end
-    minetest.log("update")
 end
 
 -- switch itemstacks between main hand and offhand
