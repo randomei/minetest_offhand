@@ -207,6 +207,9 @@ minetest.register_on_joinplayer(function(player, last_login)
 end)
 
 local function remove_hud(player, hud)
+    if hud == "last_wear" or hud == "last_count" then
+        return
+    end
     local offhand_hud = offhand[player].hud[hud]
     if offhand_hud then
         player:hud_remove(offhand_hud)
