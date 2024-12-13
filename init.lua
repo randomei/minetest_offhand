@@ -43,10 +43,21 @@ end
 -- switch itemstacks between main hand and offhand
 local function switch_hands(player)
     local inv = player:get_inventory()
+    if not inv then return end
     local mainhand_stack = player:get_wielded_item()
     local offhand_stack = inv:get_stack("offhand", 1)
-    inv:set_stack("offhand", 1, mainhand_stack)
-    player:set_wielded_item(offhand_stack)
+    if mainhand_stack:is_empty() and offhand_stack:is_empty() then return end
+    if not mainhand_stack:is_empty() and inv:contains_item("offhand", mainhand_stack:get_name()) then
+        local left = inv:add_item("offhand", mainhand_stack)
+        if not left:is_empty() then
+            player:set_wielded_item(left)
+        else
+            player:set_wielded_item(nil)
+        end
+    else
+        inv:set_stack("offhand", 1, mainhand_stack)
+        player:set_wielded_item(offhand_stack)
+    end
 end
 
 local function do_nothing(itemstack) return itemstack end
